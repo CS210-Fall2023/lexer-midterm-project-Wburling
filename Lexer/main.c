@@ -7,6 +7,10 @@ char* fileName = argv[1];
 FILE *targetFiles;
 targetFiles = fopen(fileName, "r"); 
 fread(Buffer, 1, 2048, targetFiles); 
+fclose(targetFiles);
 // now we have to make a function to read through the file and find the operators... 
-printf("%d", readAndSortOperators(Buffer)); 
+char**tokens = separateIntoTokens(Buffer); 
+display(tokens); 
+sort(tokens); 
+
 }
