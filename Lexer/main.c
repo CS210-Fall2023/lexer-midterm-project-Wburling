@@ -10,7 +10,7 @@ fread(Buffer, 1, 2048, targetFiles);
 fclose(targetFiles);
 // now we have to make a function to read through the file and find the operators... 
 char**tokens = separateIntoTokens(Buffer); 
-display(tokens); 
-sort(tokens); 
 
+sort(tokens); 
+display(tokens); 
 }

@@ -12,5 +12,6 @@ char** separateIntoTokens(char* s);
 void sort(char** s);
 void display(char** s); 
 bool isKeyword(char* s);
+bool isOperator(char *s);
 
 #endif 
