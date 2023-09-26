@@ -78,11 +78,15 @@ void sort(char **s)
     for (int i = 0; i < tokenCount; i++)
     {
         if (isKeyword(s[i])) {
-            strcat(s[i], " is a keyword");  
+            strcat(s[i], " (Keyword)");  
         }
-        if (isOperator(s[i])) {
-            strcat(s[i], " is an Operator");  
+        else if (isOperator(s[i])) {
+            strcat(s[i], " (Operator)");  
         }
+        else {
+            strcat(s[i], " (Identifer)");
+        }
+
     }
    
 }
@@ -93,6 +97,6 @@ This Function displays the program....
 void display(char **s)
 {
     for (int i = 0; i < tokenCount; i++) // this is a test loop to display all the tokens
-        printf("%s(%d)\n", s[i], i);
+        printf("%s\n", s[i]);
 }
 
