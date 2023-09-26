@@ -13,5 +13,7 @@ void sort(char** s);
 void display(char** s); 
 bool isKeyword(char* s);
 bool isOperator(char *s);
+bool isDoubleOperator(char *s);
+bool isSingleOperator(char s);
 
 #endif 

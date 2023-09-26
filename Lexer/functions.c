@@ -7,7 +7,7 @@ char *Keywords[] = {"accessor", "and", "array", "begin", "bool", "case", "charac
 "if", "in", "integer", "interface", "is", "loop", "module", "mutator", "natural", "null", "of", "or", "other", "out",
 "positive", "procedure", "range", "return", "struct", "subtype", "then", "type", "when", "while"};
 char *Operator[] = {".", "<", ">", "(", ")", "+", "-", "*","/","|", "&", ";", ",", ":", "[", "]", "=", ":=", "..","<<",">>","<>","<=",">=","**","!=","=>" }; 
-
+char singleOperator[] = {'.', '<', '>', '(', ')', '+', '-', '*','/','|', '&', ';', ',', ':', '[', ']', '='}; 
 bool isKeyword(char *s)
 {
     for (int i = 0; i < 37; i++)
@@ -28,15 +28,27 @@ bool isOperator(char *s)
     }
     return false;
 }
+bool isSingleOperator(char s)
+{
+    for (int i = 0; i < 17; i++)
+    {
+       if(s == singleOperator[i]) {
+        return true; 
+       }
+    }
+    return false;
+}
 /*
 This function separates the Buffer into tokens...
 */
 char **separateIntoTokens(char *s){
     char **array = malloc(sizeof(char *) * 2048);
+    for (int k = 0; k < 2048; k++) {
+        array[k] = malloc(sizeof(char *) * 2048);
+    }
     int start = 0; 
     for(int i =0; i < strlen(s); i++) {
-        if(s[i] == ' ' || s[i] == '\n' || isOperator(s[i]) == true) {
-            array[tokenCount] = malloc(sizeof(char *) * 2048);
+        if(s[i] == ' ' || s[i] == '\n' || isSingleOperator(s[i])) {
             for (int j = 0; j < i - start; j++) {
                 array[tokenCount][j] = s[start + j]; 
             }
@@ -45,6 +57,18 @@ char **separateIntoTokens(char *s){
             }
             start = i + 1; 
         }
+        if(isSingleOperator(s[i])) {
+                for (int j = 0; j < (i - start) - 1; j++) {
+                array[tokenCount][j] = s[start + j]; 
+            }
+           
+            if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0') {
+            tokenCount++;
+            }
+            array[tokenCount][0] = s[i]; 
+            tokenCount++; 
+           start = i + 1; 
+    }
     }
     return array; 
 }
