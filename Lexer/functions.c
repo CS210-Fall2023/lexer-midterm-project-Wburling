@@ -71,14 +71,14 @@ char **separateIntoTokens(char *s)
         array[k] = malloc(sizeof(char *) * 2048);
     }
     int start = 0;
-    int test = 0; 
+    int plusForString = 0; 
     for (int i = 0; i < strlen(s); i++)
     {
        if (s[i] == ' ' || s[i] == '\n' || isSingleOperator(s[i]) || isString((s[i])))
         {
             if(isString(s[i]))
-            test = -1; 
-            for (int j = 0; j < i - start + test; j++)
+            plusForString = -1; 
+            for (int j = 0; j < i - start + plusForString; j++)
             {
                 array[tokenCount][j] = s[start + j];
             }
@@ -87,7 +87,7 @@ char **separateIntoTokens(char *s)
                 tokenCount++;
             }
             start = i + 1;
-            test = 0; 
+            plusForString = 0; 
         }
 
          if (s[i] == '\"')
