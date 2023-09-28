@@ -10,7 +10,11 @@ fread(Buffer, 1, 2048, targetFiles);
 fclose(targetFiles);
 // now we have to make a function to read through the file and find the operators... 
 char**tokens = separateIntoTokens(Buffer); 
-
+char* outputFileName = malloc(sizeof(char)*strlen(fileName)+7); 
+memcpy(outputFileName, fileName, strlen(fileName)+1); 
 sort(tokens); 
-display(tokens); 
+strcat(outputFileName, ".lexer"); 
+FILE * outputFile = fopen(outputFileName, "w"); 
+display(tokens,outputFile); 
+fclose(outputFile); 
 }

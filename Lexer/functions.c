@@ -54,6 +54,12 @@ bool isSingleOperator(char s)
     }
     return false;
 }
+bool isString(char s) {
+    if(s == '\"') {
+        return true;
+    }
+    return false; 
+}
 /*
 This function separates the Buffer into tokens...
 */
@@ -65,11 +71,14 @@ char **separateIntoTokens(char *s)
         array[k] = malloc(sizeof(char *) * 2048);
     }
     int start = 0;
+    int test = 0; 
     for (int i = 0; i < strlen(s); i++)
     {
-        if (s[i] == ' ' || s[i] == '\n' || isSingleOperator(s[i]))
+       if (s[i] == ' ' || s[i] == '\n' || isSingleOperator(s[i]) || isString((s[i])))
         {
-            for (int j = 0; j < i - start; j++)
+            if(isString(s[i]))
+            test = -1; 
+            for (int j = 0; j < i - start + test; j++)
             {
                 array[tokenCount][j] = s[start + j];
             }
@@ -78,10 +87,22 @@ char **separateIntoTokens(char *s)
                 tokenCount++;
             }
             start = i + 1;
+            test = 0; 
         }
-        /*
-        This function is called when a case such as = or * is found. 
-        */
+
+         if (s[i] == '\"')
+        {
+            int h = i + 1;
+            while(s[h] != '\"')
+            h++; 
+            for (int j = 0; j < h - i + 1; j++)
+            {
+                array[tokenCount][j] = s[i + j];
+            }
+            tokenCount++;
+            i = h + 1;
+            start = i;
+        }
         if (isSingleOperator(s[i]) && isSingleOperator(s[i + 1]) == false)
         {
             for (int j = 0; j < (i - start) - 1; j++)
@@ -97,36 +118,55 @@ char **separateIntoTokens(char *s)
             tokenCount++;
             start = i + 1;
         }
-        /*
-        This function is called when a case has 2 operators together that make an operator.  
-        */
-        if (isSingleOperator(s[i]) && isSingleOperator(s[i + 1]))
+        else if (isSingleOperator(s[i]) && isSingleOperator(s[i + 1]))
         {
-            bool isComment = false; 
-            start = i; 
-            // if its a comment
-            for(int test = start; test < 2048; test++) {
-                if(s[test] == '*' && s[test + 1] == '/') {
-                i = test + 1; 
-                isComment = true; 
-                break; 
+            start = i;
+            if (s[i] == '/' && s[i + 1] == '*')
+            {
+                // if its a comment
+                for (int test = start; test < 2048; test++)
+                {
+                    if (s[test] == '*' && s[test + 1] == '/')
+                    {
+                        for (int j = 0; j < (test - start) + 2; j++)
+                        {
+                            array[tokenCount][j] = s[start + j];
+                        }
+                        if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
+                        {
+                            tokenCount++;
+                        }
+                        i = test + 3;
+                        start = i;
+                        break;
+                    }
                 }
+                // if its a normal double operator
             }
-            // if its a normal double operator
-            
-             for (int j = 0; j < (i - start) - 1; j++)
+            else
             {
-                array[tokenCount][j] = s[start + j];
-            }
+                for (int j = 0; j < 2; j++)
+                {
+                    array[tokenCount][j] = s[start + j];
+                }
 
-            if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
-            {
-                tokenCount++;
+                if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
+                {
+                    tokenCount++;
+                }
+                i += 1;
+                start = i + 2;
             }
-            
-            start = i + 1;
         }
 
+       
+        /*
+        This function is called when a case such as = or * is found.
+        */
+       
+        /*
+        This function is called when a case has 2 operators together that make an operator.
+        */
     }
     return array;
 }
@@ -140,18 +180,23 @@ void sort(char **s)
     {
         if (isKeyword(s[i]))
         {
-            strcat(s[i], " (Keyword)");
+            strcat(s[i], " (keyword)");
         }
         else if (isOperator(s[i]))
         {
-            strcat(s[i], " (Operator)");
+            strcat(s[i], " (operator)");
         }
-        else if (s[i][0] == '/' && s[i][1] == '*') {
-            strcat(s[i], " (Comment)");
+        else if (s[i][0] == '/' && s[i][1] == '*')
+        {
+            strcat(s[i], " (comment)");
+        }
+        else if (s[i][0] == '\"')
+        {
+            strcat(s[i], " (string)");
         }
         else
         {
-            strcat(s[i], " (Identifer)");
+            strcat(s[i], " (identifier)");
         }
     }
 }
@@ -159,8 +204,11 @@ void sort(char **s)
 /*
 This Function displays the program....
 */
-void display(char **s)
+void display(char **s, FILE *file)
 {
-    for (int i = 0; i < tokenCount; i++) // this is a test loop to display all the tokens
-        printf("%s\n", s[i]);
+    for (int i = 0; i < tokenCount; i++)
+    { // this is a test loop to display all the tokens
+        //fprintf(stdout, "%s\n", s[i]);
+        fprintf(file, "%s\n", s[i]);
+    }
 }
