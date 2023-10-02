@@ -6,10 +6,32 @@ int keywordCount = 0;
 char *Keywords[] = {"accessor", "and", "array", "begin", "bool", "case", "character", "constant", "else", "elsif", "end", "exit", "function",
                     "if", "in", "integer", "interface", "is", "loop", "module", "mutator", "natural", "null", "of", "or", "other", "out",
                     "positive", "procedure", "range", "return", "struct", "subtype", "then", "type", "when", "while"};
-char *Operator[] = {".", "<", ">", "(", ")", "+", "-", "*", "/", "|", "&", ";", ",", ":", "[", "]", "=", ":=", "..", "<<", ">>", "<>", "<=", ">=", "**", "!=", "=>"};
+char *Operator[] = {".", "<", ">", "(", ")", "+", "-", "*", "/", "|", "&", ";", ",", ":", "[", "]", "=", ":=", "..", "<<", ">>", "<>", "<=", ">=", "**", "!=", "=>"}; // got to readd all operators and then make a double operators char array;
 char singleOperator[] = {'.', '<', '>', '(', ')', '+', '-', '*', '/', '|', '&', ';', ',', ':', '[', ']', '='};
+char *doubleOperator[] = {":=", "..", "<<", ">>", "<>", "<=", ">=", "**", "!=", "=>"};
 char *Comments[] = {"/*", "*/"};
+char Numbers[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+int periodTest = 0;
 
+bool isPeriodOnce()
+{
+    if (periodTest >= 1)
+    {
+        return false;
+    }
+    return true;
+}
+bool isNum(char s)
+{
+    for (int i = 0; i < 10; i++)
+    {
+        if (s == Numbers[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}
 bool isComment(char *s)
 {
     for (int i = 0; i < 2; i++)
@@ -54,47 +76,78 @@ bool isSingleOperator(char s)
     }
     return false;
 }
-bool isString(char s) {
-    if(s == '\"') {
+bool isString(char s)
+{
+    if (s == '\"')
+    {
         return true;
     }
-    return false; 
+    return false;
 }
 /*
 This function separates the Buffer into tokens...
 */
 char **separateIntoTokens(char *s)
 {
-    char **array = malloc(sizeof(char *) * 2048);
-    for (int k = 0; k < 2048; k++)
+    char **array = malloc(sizeof(char *) * strlen(s));
+    for (int k = 0; k < strlen(s); k++)
     {
         array[k] = malloc(sizeof(char *) * 2048);
     }
     int start = 0;
-    int plusForString = 0; 
+    int plusForString = 0;
     for (int i = 0; i < strlen(s); i++)
     {
-       if (s[i] == ' ' || s[i] == '\n' || isSingleOperator(s[i]) || isString((s[i])))
+        if (s[i] == ' ' || s[i] == '\n' || isSingleOperator(s[i]) || isString((s[i])))
         {
-            if(isString(s[i]))
-            plusForString = -1; 
+            if (isString(s[i]) || isSingleOperator(s[i]))
+                plusForString = -1;
+            if (isNum(s[i]) && (s[i - 1] == ' ' || s[i - 1] == '\n'))
+            {
+                break;
+            }
             for (int j = 0; j < i - start + plusForString; j++)
             {
                 array[tokenCount][j] = s[start + j];
             }
-            if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
+            if ((array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0'))
             {
                 tokenCount++;
             }
             start = i + 1;
-            plusForString = 0; 
+            plusForString = 0;
+        }
+        if (isNum(s[i]) && (s[i - 1] == ' ' || s[i - 1] == '\n'))
+        {
+            int test = 0;
+            bool onePeriod = true;
+            // bool doublePeriod = false;
+            int h = i + 1;
+            while (isNum(s[h]) || (s[h] == '.' && onePeriod))
+            {
+                if (s[h] == '.')
+                    onePeriod = false;
+                h++;
+            }
+            if (s[h] == '.' && onePeriod == false)
+                h = h - 1;
+
+            for (int j = 0; j < h - i + test; j++)
+            {
+                array[tokenCount][j] = s[i + j];
+            }
+
+            tokenCount++;
+
+            start = h + 1;
+            i = start;
         }
 
-         if (s[i] == '\"')
+        if (s[i] == '\"')
         {
             int h = i + 1;
-            while(s[h] != '\"')
-            h++; 
+            while (s[h] != '\"')
+                h++;
             for (int j = 0; j < h - i + 1; j++)
             {
                 array[tokenCount][j] = s[i + j];
@@ -103,22 +156,7 @@ char **separateIntoTokens(char *s)
             i = h + 1;
             start = i;
         }
-        if (isSingleOperator(s[i]) && isSingleOperator(s[i + 1]) == false)
-        {
-            for (int j = 0; j < (i - start) - 1; j++)
-            {
-                array[tokenCount][j] = s[start + j];
-            }
-
-            if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
-            {
-                tokenCount++;
-            }
-            array[tokenCount][0] = s[i];
-            tokenCount++;
-            start = i + 1;
-        }
-        else if (isSingleOperator(s[i]) && isSingleOperator(s[i + 1]))
+        if (isSingleOperator(s[i]) && isSingleOperator(s[i + 1]))
         {
             start = i;
             if (s[i] == '/' && s[i + 1] == '*')
@@ -145,25 +183,78 @@ char **separateIntoTokens(char *s)
             }
             else
             {
-                for (int j = 0; j < 2; j++)
+                int checker =0; 
+                for (int test = 0; test < 10; test++)
                 {
-                    array[tokenCount][j] = s[start + j];
+                    if(s[i] == doubleOperator[test][0] && s[i+1] == doubleOperator[test][1]) {
+                        checker++; 
+                    }
                 }
+                if (checker == 1)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        array[tokenCount][j] = s[i + j];
+                    }
 
-                if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
-                {
-                    tokenCount++;
+                    if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
+                    {
+                        tokenCount++;
+                    }
+                    int tester = 0; 
+                    for(int t = i; t < 2048; t++) {
+                    if(isSingleOperator(s[t]) == false) {
+                        if(s[t] != ' ')
+                        tester = 0; 
+                        else 
+                        tester = 1;
+                    i = t + tester;
+                    start = t + tester; 
+                    break; 
+                    }
+                
+                    }
+        
+                   
+                    
                 }
-                i += 1;
-                start = i + 2;
+                else
+                {
+                    for (int j = 0; j < (i - start) - 1; j++)
+                    {
+                        array[tokenCount][j] = s[start + j];
+                    }
+
+                    if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
+                    {
+                        tokenCount++;
+                    }
+                    array[tokenCount][0] = s[i];
+                    tokenCount++;
+                    start = i + 1;
+                }
             }
         }
+        if (isSingleOperator(s[i]) && isSingleOperator(s[i + 1]) == false)
+        {
+            for (int j = 0; j < (i - start) - 1; j++)
+            {
+                array[tokenCount][j] = s[start + j];
+            }
 
-       
+            if (array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0')
+            {
+                tokenCount++;
+            }
+            array[tokenCount][0] = s[i];
+            tokenCount++;
+            start = i + 1;
+        }
+
         /*
         This function is called when a case such as = or * is found.
         */
-       
+
         /*
         This function is called when a case has 2 operators together that make an operator.
         */
@@ -194,6 +285,10 @@ void sort(char **s)
         {
             strcat(s[i], " (string)");
         }
+        else if (isNum(s[i][0]))
+        {
+            strcat(s[i], " (numeric literal)");
+        }
         else
         {
             strcat(s[i], " (identifier)");
@@ -208,7 +303,7 @@ void display(char **s, FILE *file)
 {
     for (int i = 0; i < tokenCount; i++)
     { // this is a test loop to display all the tokens
-        //fprintf(stdout, "%s\n", s[i]);
+        fprintf(stdout, "%s\n", s[i]);
         fprintf(file, "%s\n", s[i]);
     }
 }

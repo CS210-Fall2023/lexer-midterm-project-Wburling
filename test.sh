@@ -3,10 +3,10 @@ for file in files/*.cci
 do
     ./Lexer/main $file
     echo "${file}.ANS vs. ${file}.lexer"
-    #diff ${file}.ANS  ${file}.lexer
+    # diff ${file}.ANS  ${file}.lexer
     if [[ $(diff ${file}.ANS  ${file}.lexer) ]]; then #if output of diff command is not zero
         echo "Somthing went wrong"
-        #diff ${file}.ANS  ${file}.lexer
+        # diff ${file}.ANS  ${file}.lexer
         # cat ${file}.ANS | xclip -selection clipboard
         # echo "Copied correct answer"
         # read -r __unused
