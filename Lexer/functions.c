@@ -208,12 +208,12 @@ char **separateIntoTokens(char *s)
                         tester = 0; 
                         else 
                         tester = 1;
-                    i = t + tester;
                     start = t + tester; 
                     break; 
                     }
                 
                     }
+                    i = start + 1;   
         
                    
                     
