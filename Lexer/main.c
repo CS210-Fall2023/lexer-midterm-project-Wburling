@@ -2,11 +2,11 @@
 #include "functions.h"
 
 int main(int argc, char**argv) {
-char* Buffer = malloc(sizeof(char) * 2048); 
+char* Buffer = malloc(sizeof(char) * 200000000); 
 char* fileName = argv[1]; 
 FILE *targetFiles;
 targetFiles = fopen(fileName, "r"); 
-fread(Buffer, 1, 2048, targetFiles); 
+fread(Buffer, 1, 200000000, targetFiles); 
 fclose(targetFiles);
 // now we have to make a function to read through the file and find the operators... 
 char**tokens = separateIntoTokens(Buffer); 
