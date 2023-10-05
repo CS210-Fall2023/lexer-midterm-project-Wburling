@@ -5,7 +5,7 @@ char *Keywords[] = {"accessor", "and", "array", "begin", "bool", "case", "charac
                     "if", "in", "integer", "interface", "is", "loop", "module", "mutator", "natural", "null", "of", "or", "other", "out",
                     "positive", "procedure", "range", "return", "struct", "subtype", "then", "type", "when", "while"};
 char *Operator[] = {".", "<", ">", "(", ")", "+", "-", "*", "/", "|", "&", ";", ",", ":", "[", "]", "=", ":=", "..", "<<", ">>", "<>", "<=", ">=", "**", "!=", "=>"}; // got to readd all operators and then make a double operators char array;
-char singleOperator[] = {'.', '<', '>', '(', ')', '+', '-', '*', '/', '|', '&', ';', ',', ':', '[', ']', '='};
+char singleOperator[] = {'.', '<', '>', '(', ')', '+', '-', '*', '/', '|', '&', ';', ',', ':', '[', ']', '=', '!'};
 char *doubleOperator[] = {":=", "..", "<<", ">>", "<>", "<=", ">=", "**", "!=", "=>"};
 char Numbers[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
@@ -44,7 +44,7 @@ bool isOperator(char *s)
 }
 bool isSingleOperator(char s)
 {
-    for (int i = 0; i < 17; i++)
+    for (int i = 0; i < 18; i++)
     {
         if (s == singleOperator[i])
         {
@@ -83,8 +83,9 @@ char **separateIntoTokens(char *s)
         */
 
         // Basic finding space, new line, EOF, etc token
-        if (s[end] == ' ' || s[end] == '\n' || end == strlen(s) - 1 || isSingleOperator(s[end]) || isString(s[end]))
+        if (s[end] == ' ' || s[end] == '\n' || s[end] == '\0' ||end == strlen(s) - 1 || isSingleOperator(s[end]) || isString(s[end]))
         {
+           
             if (s[end] == '.' && isNum(s[end + 1]))
             {
                 end++;
@@ -92,6 +93,7 @@ char **separateIntoTokens(char *s)
             }
             if (end == strlen(s) - 1)
                 cases = 1;
+            
             if (isString(s[end]))
                 cases = -1;
             array[tokenCount] = malloc(sizeof(char) * 2048);
@@ -99,10 +101,11 @@ char **separateIntoTokens(char *s)
             {
                 array[tokenCount][i] = s[start + i];
             }
+             
             if ((array[tokenCount][0] != ' ' && array[tokenCount][0] != '\0') && array[tokenCount][0] != '\n')
                 tokenCount++;
+           
             cases = 0;
-
             start = end + 1;
         }
         // if it is a special string
@@ -134,7 +137,8 @@ char **separateIntoTokens(char *s)
         // if it is an operator such as ; or *
         if (isSingleOperator(s[end]) && isSingleOperator(s[end + 1]) == false)
         {
-            for (int i = 0; i < 17; i++)
+          
+            for (int i = 0; i < 18; i++)
             {
                 if (s[end] == singleOperator[i])
                 {
@@ -144,36 +148,40 @@ char **separateIntoTokens(char *s)
                     break;
                 }
             }
-            
+            start = end + 1;
             continue;
         }
         if (isSingleOperator(s[end]) && isSingleOperator(s[end + 1]) == true)
         {
             bool doublePassed = false;
-            //if it is a comment
+            // if it is a comment
+            //printf("made it to the double operator Loop\n");
             if (s[end] == '/' && s[end + 1] == '*')
+            {
+                start--;
+                // if its a comment
+                for (int t = start; EOF; t++)
                 {
-                    start--; 
-                    // if its a comment
-                    for (int t = start; EOF; t++)
+                   
+                    if (s[t] == '*' && s[t + 1] == '/')
                     {
-                        if (s[t] == '*' && s[t + 1] == '/')
+                        t++; 
+                        end = t + 1; // + 1 
+                         
+                        
+                        for (int i = 0; i < end-start; i++)
                         {
-                            for (int i = 0; i < t - start + 2; i++)
-                            {
-                                array[tokenCount][i] = s[start + i];
-                            }
-                            tokenCount++;
-                            start = t + 3;
-                            end = start; 
-                            break; 
-                            
+                            array[tokenCount][i] = s[start + i];
                         }
-
+                        tokenCount++;
+                        start = end + 1; 
+                        end++;
+                        break;
                     }
-                    continue; 
-                    // if its a normal double operator
                 }
+                continue;
+                // if its a normal double operator
+            }
             for (int i = 0; i < 10; i++)
             {
                 // printf("%.*s == ", 2, s + start - 1);
@@ -186,29 +194,39 @@ char **separateIntoTokens(char *s)
                     array[tokenCount][1] = s[end + 1];
                     tokenCount++;
                     doublePassed = true;
-                    break; 
+                    if(isSingleOperator(s[end + 2])) {
+                        start+=1;
+                        end+=1;
+                    }
+                    else {
+                    start++;
+                    end++;
+                    }
+                    break;
                 }
             }
             if (doublePassed == false)
             {
-                    array[tokenCount] = malloc(sizeof(char) * 2048);
-                    array[tokenCount][0] = s[end];
-                    tokenCount++;
-                    array[tokenCount] = malloc(sizeof(char) * 2048);
-                    array[tokenCount][0] = s[end + 1];
-                    tokenCount++;
-                    if(s[end + 1] == ' ') {
+                array[tokenCount] = malloc(sizeof(char) * 2048);
+                array[tokenCount][0] = s[end];
+                tokenCount++;
+                array[tokenCount] = malloc(sizeof(char) * 2048);
+                array[tokenCount][0] = s[end + 1];
+                tokenCount++;
+                if (s[end + 1] == ' ')
+                {
                     start += 2;
                     end += 2;
-                    }
-                    else {
-                        start +=1;
-                        end+=1; 
-                    }
-                    continue;
+                }
+                else
+                {
+                    start += 1;
+                    end += 1;
+                }
+                continue;
             }
-            start++;
-            end++;
+            // start++;
+            // end++;
             continue;
         }
     }
@@ -239,6 +257,9 @@ void sort(char **s)
         {
             strcat(s[i], " (numeric literal)");
         }
+        else if(s[i][0] == '\'') {
+            strcat(s[i], " (character literal)");
+        }
         else
         {
             strcat(s[i], " (identifier)");
@@ -250,7 +271,7 @@ void display(char **s, FILE *file)
 {
     for (int i = 0; i < tokenCount; i++)
     { // this is a test loop to display all the tokens
-       // fprintf(stdout, "%s\n", s[i]);
+        //fprintf(stdout, "%s\n", s[i]);
         fprintf(file, "%s\n", s[i]);
     }
 }
